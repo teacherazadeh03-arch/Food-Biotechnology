@@ -1,0 +1,63 @@
+%% ===============================================================
+%  Nonlinear Bioreactor Model (Saccharomyces cerevisiae – Yeast)
+%  Industrial Microbiology & Fermentation
+% 
+%
+%  Single-file script:
+%   - Monod kinetics
+%   - Biomass & substrate mass balances
+%   - Steady-state using fsolve
+%   - Dynamic simulation using ode45
+%   - Plot of fermentation behaviour
+%% ===============================================================
+
+clear; clc; close all;
+
+% === Parameters ===
+mu_max = 0.40;   % 1/h
+Ks     = 1.0;    % g/L
+Yxs    = 0.5;    % gX/gS
+Sf     = 20;     % g/L
+D      = 0.20;   % 1/h
+
+params = [mu_max, Ks, Yxs, Sf, D];
+
+% === Anonymous steady-state function ===
+steadyStateFun = @(x) [
+    (mu_max * x(2) / (Ks + x(2))) * x(1) - D * x(1);                     % dX/dt = 0
+    D * (Sf - x(2)) - (1/Yxs) * (mu_max * x(2) / (Ks + x(2))) * x(1)     % dS/dt = 0
+];
+
+disp('=== Computing steady-state values using fsolve ===');
+
+x0 = [1; 10];    % initial guess
+options = optimoptions('fsolve','Display','off');
+[Xss, fval, exitflag] = fsolve(steadyStateFun, x0, options);
+
+disp(['Steady-State Biomass (X*)   = ', num2str(Xss(1),'%.3f'), ' g/L']);
+disp(['Steady-State Substrate (S*) = ', num2str(Xss(2),'%.3f'), ' g/L']);
+
+% === Anonymous ODE system ===
+bioreactorODE = @(t, x) [
+    (mu_max * x(2) / (Ks + x(2))) * x(1) - D*x(1) ;
+    D*(Sf - x(2)) - (1/Yxs)*(mu_max * x(2) / (Ks + x(2))) * x(1)
+];
+
+% === Dynamic simulation ===
+tspan = [0 50];
+x_init = [0.1; Sf];
+
+[t, x] = ode45(bioreactorODE, tspan, x_init);
+
+% === Plotting ===
+figure;
+plot(t, x(:,1), 'b-', 'LineWidth', 2); hold on;
+plot(t, x(:,2), 'r-', 'LineWidth', 2);
+yline(Xss(1), '--b', 'Steady X');
+yline(Xss(2), '--r', 'Steady S');
+xlabel('Time (h)');
+ylabel('Concentration (g/L)');
+legend('Biomass (X)','Substrate (S)','Location','best');
+title('Yeast Fermentation (CSTR) – Nonlinear Bioreactor Model');
+grid on;
+
