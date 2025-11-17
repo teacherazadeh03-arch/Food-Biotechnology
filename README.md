@@ -1,4 +1,4 @@
-# Food-Biotechnology
+# Food-Biotechnology-MATLAB
 Nonlinear Bioreactor Modelling – Yeast Fermentation. This repository contains a MATLAB model for simulating yeast fermentation dynamics in a continuous stirred-tank reactor (CSTR) using Monod kinetics. The script is designed to run directly in MATLAB Online, making it easy to use without downloading extra files or setting up local MATLAB environments.
 Microorganism
 Saccharomyces cerevisiae – common baker’s/brewer’s yeast:
